@@ -11,11 +11,25 @@ public class PlayerController : MonoBehaviour
 
     private bool jumpFlag = false;
 
+    public GameObject meleeAttack;
+
     public LayerMask ground;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private float facingDirection;
+
+    private float attackOffset = 0.02f;
+
+    public float meleeDuration = 0.25f;
+    private float timeElapseSinceMelee = 0;
+
+    bool meleeTriggered = false;
+
+    public
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        facingDirection = 1;
     }
 
     // Update is called once per frame
@@ -26,6 +40,23 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
         {
             jumpFlag = true;
+        }
+        if (xMove != 0)
+        {
+            facingDirection = xMove;
+        }
+        if (meleeTriggered)
+        {
+            if (timeElapseSinceMelee < meleeDuration)
+            {
+                timeElapseSinceMelee += Time.deltaTime;
+            }
+            else
+            {
+                meleeAttack.SetActive(false);
+                timeElapseSinceMelee = 0;
+                meleeTriggered = false;
+            }
         }
 
         //Debug.Log(IsGrounded());
@@ -42,6 +73,19 @@ public class PlayerController : MonoBehaviour
             jumpFlag = false;
         }
     }
+
+    private void RangedAttack()
+    {
+        Vector3 pos = new Vector3(attackOffset * facingDirection, 0, 0);
+        Instantiate(BulletPrefab, pos, Quaternion.identity);
+    }
+
+    private void meleeAttack()
+    {
+        meleeAttack.SetActive(true);
+        meleeAttack.transform.localPosition = new Vector3(attackOffset * facingDirection, meleeAttack.tranform.localposition.y, 0);
+    }
+
     private bool IsGrounded()
     {
         float radius = GetComponent<Collider2D>().bounds.extents.x;
